@@ -1,16 +1,48 @@
 # hive_gen_works
 
-A new Flutter project.
+This is a small demo project to demonstrate my solution to the problem outlined at
+https://github.com/hivedb/hive/issues/795. The linked issue is basically detailing
+why Hive adapters are not being generated.
 
-## Getting Started
+To run the code, check out the project and run `flutter pub get`, then run build_runner,
+`flutter packages run build_runner build`, look in the generated `demo.g.dart` file and
+you will see the generated adapter code, e.g.
 
-This project is a starting point for a Flutter application.
+```dart
+class DemoAdapter extends TypeAdapter<_$_Demo> {
+  @override
+  final int typeId = 0;
 
-A few resources to get you started if this is your first Flutter project:
+  @override
+  _$_Demo read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return _$_Demo(
+      val: fields[0] as int,
+    );
+  }
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+  @override
+  void write(BinaryWriter writer, _$_Demo obj) {
+    writer
+      ..writeByte(1)
+      ..writeByte(0)
+      ..write(obj.val);
+  }
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DemoAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+```
+
+Delete the newline at the end of the `demo.dart` file and then rerun the build_runner command,
+look in the `demo.g.dart` generated file and the adapter will not be there.
